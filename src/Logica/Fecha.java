@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+package Logica;
 
 public class Fecha {
     private int dia,mes,año;
@@ -43,23 +43,7 @@ public class Fecha {
         return true;
     }
 
-    public static ArrayList<Examen_Trabajo> ordenarPorFechas(ArrayList<Examen_Trabajo> lista){
-        ArrayList<Examen_Trabajo> copia = new ArrayList<>();
-        for (int i = 0; i < lista.size(); i++) {
-            if(!lista.get(i).notaAsignada() && lista.get(i).getAño()!=-1)
-                copia.add(lista.get(i));
-        }
-        ArrayList<Examen_Trabajo> resultado = new ArrayList<>();
-        while(copia.size()>0){
-            Examen_Trabajo menor=copia.get(0);
-            for (int i = 1; i < copia.size(); i++) {
-                if(copia.get(i).getFecha().anteriorQue(menor.getFecha())){
-                    menor = copia.get(i);
-                }
-            }
-            resultado.add(menor);
-            copia.remove(menor);
-        }
-        return resultado;
+    public String toString(){
+        return String.format("%d / %d / %d",dia, mes, año);
     }
 }
