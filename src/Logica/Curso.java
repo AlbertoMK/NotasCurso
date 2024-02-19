@@ -48,9 +48,10 @@ public class Curso {
         periodos.get(indicePeriodo).eliminarAsignatura(C_Asignatura.getInstance().getAsignaturaById(idAsignatura));
     }
 
-    public void eliminarAsignatura(int idAsignatura) { //elimina la asignatura de todos los periodos
+    public void eliminarAsignatura(Asignatura asignatura) { //elimina la asignatura de todos los periodos y recursivamente elimina los evaluables de su controlador también
         for (Periodo periodo : periodos) {
-            periodo.eliminarAsignatura(C_Asignatura.getInstance().getAsignaturaById(idAsignatura));
+            if(periodo.containsAsignatura(asignatura))
+                periodo.eliminarAsignatura(asignatura);
         }
     }
 
@@ -137,6 +138,50 @@ public class Curso {
         return sumatorio / numAsignaturas;
     }
 
+    public double getNotaMediaAsignatura(Asignatura a) {
+        double sumatorio = 0;
+        int contador = 0;
+        for (Periodo periodo : periodos) {
+            if (periodo.containsAsignatura(a)) {
+                if (periodo.getNotaMediaAsignatura(a) != -1) {
+                    sumatorio += periodo.getNotaMediaAsignatura(a);
+                    contador++;
+                }
+            }
+        }
+        if (contador == 0)
+            return -1;
+        return sumatorio / contador;
+    }
+
+    public double getNotaSeguraObtenidaAsignatura(Asignatura a) {
+        double sumatorio = 0;
+        int contador = 0;
+        for (Periodo periodo : periodos) {
+            if (periodo.containsAsignatura(a)) {
+                contador++;
+                sumatorio += periodo.getNotaSeguraObtenidaAsignatura(a);
+            }
+        }
+        if (contador == 0)
+            return 0;
+        return sumatorio / contador;
+    }
+
+    public double getNotaPerdidaAsignatura(Asignatura a) {
+        double sumatorio = 0;
+        int contador = 0;
+        for (Periodo periodo : periodos) {
+            if (periodo.containsAsignatura(a)) {
+                contador++;
+                sumatorio += periodo.getNotaPerdidaAsignatura(a);
+            }
+        }
+        if(contador == 0)
+            return 0;
+        return sumatorio / contador;
+    }
+
     public ArrayList<Periodo> getPeriodos() {
         return periodos;
     }
@@ -190,7 +235,7 @@ public class Curso {
                     }
                     Periodo periodo = new Periodo(nombre, hmEvaluables, hmNotasExtra);
                     añadirPeriodo(periodo);
-                } catch (ArrayIndexOutOfBoundsException ex){
+                } catch (ArrayIndexOutOfBoundsException ex) {
                     añadirPeriodo(nombre);
                 }
             }
