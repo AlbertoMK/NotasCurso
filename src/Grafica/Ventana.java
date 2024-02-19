@@ -1423,6 +1423,10 @@ public class Ventana extends javax.swing.JFrame {
             }
         });
 
+        for (ActionListener al : botonEditarAsignatura.getActionListeners()) {
+            botonEditarAsignatura.removeActionListener(al);
+        }
+
         botonEditarAsignatura.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
