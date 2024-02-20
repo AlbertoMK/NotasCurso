@@ -50,25 +50,27 @@ public class Curso {
 
     public void eliminarAsignatura(Asignatura asignatura) { //elimina la asignatura de todos los periodos y recursivamente elimina los evaluables de su controlador también
         for (Periodo periodo : periodos) {
-            if(periodo.containsAsignatura(asignatura))
+            if (periodo.containsAsignatura(asignatura))
                 periodo.eliminarAsignatura(asignatura);
         }
     }
 
-    public double getNotaMediaCurso() { //hace la media de todas las asignaturas del curso con nota
-        int totalAsignaturas = 0;
+    public double getNotaMediaCurso() { //hace la media de todas las asignaturas del curso con nota teniendo en cuenta los créditos de cada asignatura
+        HashMap<Asignatura, Double> medias = getMediasAsignaturas();
+        double creditos = 0;
         double sumatorio = 0;
-        for (Periodo periodo : periodos) {
-            int numAsignaturas = periodo.getNumAsignaturasConNota();
-            sumatorio += (periodo.getNotaMediaPeriodo() * numAsignaturas);
-            totalAsignaturas += numAsignaturas;
+        for (Asignatura a : medias.keySet()) {
+            if (medias.get(a) != -1) {
+                creditos += a.getCreditos();
+                sumatorio += a.getCreditos() * medias.get(a);
+            }
         }
-        if (totalAsignaturas == 0)
+        if (creditos == 0)
             return -1;
-        else
-            return sumatorio / totalAsignaturas;
+        return sumatorio / creditos;
     }
 
+    //Devuelve un HashMap en el que las claves son las asignaturas y sus valores son sus medias.
     public HashMap<Asignatura, Double> getMediasAsignaturas() {
         HashMap<Asignatura, Double> notas = new HashMap<>();
         HashMap<Asignatura, Integer> repeticiones = new HashMap<>();
@@ -98,32 +100,76 @@ public class Curso {
         return notas;
     }
 
-    public double getNotaSeguraObtenidaCurso() {
-        double notaTotal = 0;
-        int numAsignaturas = 0;
-        for (Periodo periodo : periodos) {
-            int asignaturas = periodo.getNumAsignaturas();
-            numAsignaturas += asignaturas;
-            notaTotal += (periodo.getNotaSeguraObtenidaPeriodo() * asignaturas);
+    public HashMap<Asignatura, Double> getNotasConseguidasAsignaturas() {
+        HashMap<Asignatura, Double> notas = new HashMap<>();
+        HashMap<Asignatura, Integer> repeticiones = new HashMap<>();
+        for (Periodo p : periodos) {
+            for (Integer i : p.getAsignaturas()) {
+                Asignatura a = C_Asignatura.getInstance().getAsignaturaById(i);
+                if (!notas.containsKey(a)) {
+                    notas.put(a, p.getNotaSeguraObtenidaAsignatura(a));
+                } else {
+                    notas.put(a, p.getNotaSeguraObtenidaAsignatura(a) + notas.get(a));
+                    if (repeticiones.containsKey(a))
+                        repeticiones.put(a, repeticiones.get(a) + 1);
+                    else
+                        repeticiones.put(a, 2);
+                }
+            }
         }
-        if (numAsignaturas == 0)
+        for (Asignatura a : repeticiones.keySet()) { //editar si hay periodos que cuentan más que otros
+            notas.put(a, notas.get(a) / repeticiones.get(a));
+        }
+        return notas;
+    }
+
+    public HashMap<Asignatura, Double> getNotasPerdidasAsignaturas() {
+        HashMap<Asignatura, Double> notas = new HashMap<>();
+        HashMap<Asignatura, Integer> repeticiones = new HashMap<>();
+        for (Periodo p : periodos) {
+            for (Integer i : p.getAsignaturas()) {
+                Asignatura a = C_Asignatura.getInstance().getAsignaturaById(i);
+                if (!notas.containsKey(a)) {
+                    notas.put(a, p.getNotaPerdidaAsignatura(a));
+                } else {
+                    notas.put(a, p.getNotaPerdidaAsignatura(a) + notas.get(a));
+                    if (repeticiones.containsKey(a))
+                        repeticiones.put(a, repeticiones.get(a) + 1);
+                    else
+                        repeticiones.put(a, 2);
+                }
+            }
+        }
+        for (Asignatura a : repeticiones.keySet()) { //editar si hay periodos que cuentan más que otros
+            notas.put(a, notas.get(a) / repeticiones.get(a));
+        }
+        return notas;
+    }
+
+    public double getNotaSeguraObtenidaCurso() {
+        HashMap<Asignatura, Double> notas = getNotasConseguidasAsignaturas();
+        double sumatorio = 0;
+        double creditos = 0;
+        for (Asignatura a : notas.keySet()) {
+            creditos += a.getCreditos();
+            sumatorio += notas.get(a) * a.getCreditos();
+        }
+        if (creditos == 0)
             return 0;
-        else
-            return notaTotal / numAsignaturas;
+        return sumatorio / creditos;
     }
 
     public double getNotaPerdidaCurso() {
-        double notaTotal = 0;
-        int numAsignaturas = 0;
-        for (Periodo periodo : periodos) {
-            int asignaturas = periodo.getNumAsignaturas();
-            notaTotal += (periodo.getNotaPerdidaPeriodo() * asignaturas);
-            numAsignaturas += asignaturas;
+        HashMap<Asignatura, Double> notas = getNotasPerdidasAsignaturas();
+        double sumatorio = 0;
+        double creditos = 0;
+        for (Asignatura a : notas.keySet()) {
+            creditos += a.getCreditos();
+            sumatorio += notas.get(a) * a.getCreditos();
         }
-        if (numAsignaturas == 0)
+        if (creditos == 0)
             return 0;
-        else
-            return notaTotal / numAsignaturas;
+        return sumatorio / creditos;
     }
 
     public double getProgreso() {
@@ -177,7 +223,7 @@ public class Curso {
                 sumatorio += periodo.getNotaPerdidaAsignatura(a);
             }
         }
-        if(contador == 0)
+        if (contador == 0)
             return 0;
         return sumatorio / contador;
     }

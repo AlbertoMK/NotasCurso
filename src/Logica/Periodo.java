@@ -37,7 +37,7 @@ public class Periodo {
 
     public void eliminarAsignatura(Asignatura asignatura) {
         List<Integer> evaluables = asignatura_evaluables.get(asignatura.getId());
-        for(Integer i : evaluables){
+        for (Integer i : evaluables) {
             C_Evaluable.getInstance().eliminarEvaluable(i);
         }
         asignatura_evaluables.remove(Integer.valueOf(asignatura.getId()));
@@ -49,17 +49,18 @@ public class Periodo {
     }
 
     public void eliminarEvaluable(Asignatura asignatura, Evaluable evaluable) {
-        asignatura_evaluables.get(Integer.valueOf(asignatura.getId())).remove(Integer.valueOf(evaluable.getId()));
+        //Importante mantener el Integer.valueOf porque sino te elimina el index del parámetro en vez del objeto, que es lo esperado en este caso.
+        asignatura_evaluables.get(asignatura.getId()).remove(Integer.valueOf(evaluable.getId()));
     }
 
-    public void setNotaExtra(Asignatura asignatura, double valor){
+    public void setNotaExtra(Asignatura asignatura, double valor) {
         asignatura_notaExtra.put(asignatura.getId(), valor);
     }
 
-    public boolean contieneEvaluableConNombreEnAsignatura(Asignatura asignatura, String nombreEvaluable){
+    public boolean contieneEvaluableConNombreEnAsignatura(Asignatura asignatura, String nombreEvaluable) {
         List<Integer> idEvaluables = asignatura_evaluables.get(asignatura.getId());
         for (Integer id : idEvaluables) {
-            if(C_Evaluable.getInstance().getEvaluableById(id).getNombre().equals(nombreEvaluable))
+            if (C_Evaluable.getInstance().getEvaluableById(id).getNombre().equals(nombreEvaluable))
                 return true;
         }
         return false;
@@ -93,20 +94,22 @@ public class Periodo {
         return medias;
     }
 
+    //Devuelve la nota media del periodo teniendo en cuenta los creéditos de cada asignatura.
     public double getNotaMediaPeriodo() {
-        int numAsignaturas = 0;
+        double numCreditos = 0;
         double sumatorioNotas = 0;
         for (Integer id : asignatura_evaluables.keySet()) {
-            double nota = getNotaMediaAsignatura(C_Asignatura.getInstance().getAsignaturaById(id));
+            Asignatura asignatura = C_Asignatura.getInstance().getAsignaturaById(id);
+            double nota = getNotaMediaAsignatura(asignatura);
             if (nota != -1) {
-                numAsignaturas++;
-                sumatorioNotas += nota;
+                numCreditos += asignatura.getCreditos();
+                sumatorioNotas += nota * asignatura.getCreditos();
             }
         }
-        if (numAsignaturas == 0)
+        if (numCreditos == 0)
             return -1;
         else
-            return sumatorioNotas / numAsignaturas;
+            return sumatorioNotas / numCreditos;
     }
 
     public double getNotaSeguraObtenidaAsignatura(Asignatura asignatura) {
@@ -123,17 +126,20 @@ public class Periodo {
         return resulado;
     }
 
+    // Devuelve la nota segura obtenida teniendo en cuenta los créditos de cada asignatura
     public double getNotaSeguraObtenidaPeriodo() {
-        double sumatorio = 0;
-        for (Integer id : asignatura_evaluables.keySet()) {
-            if (getNotaSeguraObtenidaAsignatura(C_Asignatura.getInstance().getAsignaturaById(id)) != -1) {
-                sumatorio += getNotaSeguraObtenidaAsignatura(C_Asignatura.getInstance().getAsignaturaById(id));
-            }
-        }
         if (asignatura_evaluables.keySet().size() == 0)
             return 0;
-        else
-            return sumatorio / asignatura_evaluables.keySet().size();
+        double numCreditos = 0;
+        double sumatorio = 0;
+        for (Integer id : asignatura_evaluables.keySet()) {
+            Asignatura asignatura = C_Asignatura.getInstance().getAsignaturaById(id);
+            numCreditos += asignatura.getCreditos();
+            if (getNotaSeguraObtenidaAsignatura(asignatura) != -1) {
+                sumatorio += getNotaSeguraObtenidaAsignatura(asignatura) * asignatura.getCreditos();
+            }
+        }
+        return sumatorio / numCreditos;
     }
 
     public double getNotaPerdidaAsignatura(Asignatura asignatura) {
@@ -151,24 +157,35 @@ public class Periodo {
         return resulado;
     }
 
+    // Devuelve la nota perdida del periodo teniendo en cuenta los créditos de cada asignatura.
     public double getNotaPerdidaPeriodo() {
-        double sumatorio = 0;
-        for (Integer id : asignatura_evaluables.keySet()) {
-            sumatorio += getNotaPerdidaAsignatura(C_Asignatura.getInstance().getAsignaturaById(id));
-        }
         if (asignatura_evaluables.keySet().size() == 0)
             return 0;
-        else
-            return sumatorio / asignatura_evaluables.keySet().size();
+        double numCreditos = 0;
+        double sumatorio = 0;
+        for (Integer id : asignatura_evaluables.keySet()) {
+            Asignatura asignatura = C_Asignatura.getInstance().getAsignaturaById(id);
+            numCreditos += asignatura.getCreditos();
+            sumatorio += getNotaPerdidaAsignatura(asignatura) * asignatura.getCreditos();
+        }
+        return sumatorio / numCreditos;
     }
 
-    public double getSumaPesos(Asignatura asignatura){
+    public double getSumaPesos(Asignatura asignatura) {
         double sumatorio = 0;
         List<Integer> lista = asignatura_evaluables.get(asignatura.getId());
         for (Integer idEvaluable : lista) {
             sumatorio += C_Evaluable.getInstance().getEvaluableById(idEvaluable).getPesoPorcentaje();
         }
         return sumatorio;
+    }
+
+    public double getSumaCreditos(){
+        double suma = 0;
+        for (Integer idA : asignatura_evaluables.keySet()) {
+            suma += C_Asignatura.getInstance().getAsignaturaById(idA).getCreditos();
+        }
+        return suma;
     }
 
     public double getPorcentajeProgresoPeriodo() {
@@ -231,11 +248,11 @@ public class Periodo {
         return contador;
     }
 
-    public Evaluable getEvaluable(Asignatura asignatura, String nombreEvaluable){
+    public Evaluable getEvaluable(Asignatura asignatura, String nombreEvaluable) {
         C_Evaluable ce = C_Evaluable.getInstance();
         List<Integer> idEvaluables = asignatura_evaluables.get(asignatura.getId());
-        for(Integer id : idEvaluables){
-            if(ce.getEvaluableById(id).getNombre().equals(nombreEvaluable))
+        for (Integer id : idEvaluables) {
+            if (ce.getEvaluableById(id).getNombre().equals(nombreEvaluable))
                 return ce.getEvaluableById(id);
         }
         return null;

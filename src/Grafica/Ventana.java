@@ -38,6 +38,7 @@ public class Ventana extends javax.swing.JFrame {
     private javax.swing.JButton aceptarSelectorAsignatura;
     private JButton botonEliminarAsignatura;
     private JButton botonEditarAsignatura;
+    private JButton botonEliminarEvaluable;
     private javax.swing.JCheckBox checkboxEsExamen;
     private javax.swing.JColorChooser colorEditorAsignatura;
     private javax.swing.JScrollPane contenedorListaAsignaturas;
@@ -577,7 +578,7 @@ public class Ventana extends javax.swing.JFrame {
         panelAñadirEvaluable.add(textoNotaEvaluable);
 
         cancelarEvaluable = new Boton("CANCELAR");
-        cancelarEvaluable.setBounds(ancho / 3 - 75, 740, 150, 30);
+        cancelarEvaluable.setBounds(ancho / 2 - 75 - 50 - 150, 740, 150, 30);
         cancelarEvaluable.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 mostrarPanelCurso();
@@ -586,8 +587,14 @@ public class Ventana extends javax.swing.JFrame {
         panelAñadirEvaluable.add(cancelarEvaluable);
 
         aceptarEvaluable = new Boton("ACEPTAR");
-        aceptarEvaluable.setBounds(ancho / 3 + 375, 740, 150, 30);
+        aceptarEvaluable.setBounds(ancho / 2 + 75 + 50, 740, 150, 30);
         panelAñadirEvaluable.add(aceptarEvaluable);
+
+        botonEliminarEvaluable = new Boton("ELIMINAR");
+        botonEliminarEvaluable.setBackground(new Color(255, 132, 132));
+        botonEliminarEvaluable.setForeground(new Color(168, 0, 0));
+        botonEliminarEvaluable.setBounds(ancho / 2 - 75, 740, 150, 30);
+        panelAñadirEvaluable.add(botonEliminarEvaluable);
 
         getContentPane().add(panelAñadirEvaluable, "panelCrearEvaluable");
 
@@ -716,7 +723,7 @@ public class Ventana extends javax.swing.JFrame {
         panelAsignatura.add(botonEliminarAsignatura);
 
         botonEditarAsignatura = new JButton();
-        botonEditarAsignatura.setBounds(ancho / 2 +2, 250, 64, 64);
+        botonEditarAsignatura.setBounds(ancho / 2 + 2, 250, 64, 64);
         botonEditarAsignatura.setBackground(colorPrimario);
         botonEditarAsignatura.setBorder(null);
         ImageIcon iconoEditar = new ImageIcon("editar.png");
@@ -810,7 +817,7 @@ public class Ventana extends javax.swing.JFrame {
         textoNombreEditorAsignatura.setFont(font2);
         panelAñadirAsignatura.add(textoNombreEditorAsignatura);
 
-        JLabel creditosEditorAsignatura = new JLabel("CRÉDITOS (opc):");
+        JLabel creditosEditorAsignatura = new JLabel("CRÉDITOS:");
         creditosEditorAsignatura.setForeground(colorTernario);
         creditosEditorAsignatura.setFont(font2);
         creditosEditorAsignatura.setBounds(ancho / 3, 200, 150, 30);
@@ -957,7 +964,6 @@ public class Ventana extends javax.swing.JFrame {
                     try {
                         C_Asignatura.getInstance().añadirAsignatura(evento.getAsignatura());
                         C_Asignatura.getInstance().guardar();
-                        JOptionPane.showMessageDialog(null, "Asignatura añadida correctamente.");
                         JMenuItem item = new JMenuItem(evento.getAsignatura().getNombre());
                         item.addActionListener(new ActionListener() {
                             @Override
@@ -966,31 +972,33 @@ public class Ventana extends javax.swing.JFrame {
                             }
                         });
                         jMenuAsignaturas.add(item);
+                        mostrarPanelCurso();
+                        JOptionPane.showMessageDialog(null, "Asignatura añadida correctamente.");
                     } catch (ExcepcionAsignatura ex) {
                         JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR DE CREACIÓN DE ASIGNATURA", JOptionPane.ERROR_MESSAGE);
-                    } finally {
-                        mostrarPanelCurso();
                     }
                 }
             };
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                double creditos;
                 try {
-                    if (textoCreditosAsignatura.getText().equals(""))
-                        creditos = -1;
-                    else
-                        creditos = Double.parseDouble(textoCreditosAsignatura.getText());
-                    if (textoNombreEditorAsignatura.getText().length() < 3)
-                        JOptionPane.showMessageDialog(null, "Ingrese un nombre de al menos 3 caracteres", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
+                    double creditos = Double.parseDouble(textoCreditosAsignatura.getText());
+                    if (creditos <= 0)
+                        JOptionPane.showMessageDialog(null, "Los créditos deben ser un numero real positivo.", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
                     else {
-                        Asignatura a = new Asignatura(textoNombreEditorAsignatura.getText(), colorEditorAsignatura.getColor(), creditos);
-                        AceptarEvent evento = new AceptarEvent(this, a);
-                        lst.onAceptar(evento);
+                        if (textoNombreEditorAsignatura.getText().length() < 3)
+                            JOptionPane.showMessageDialog(null, "Ingrese un nombre de al menos 3 caracteres", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
+                        else {
+                            Asignatura a = new Asignatura(textoNombreEditorAsignatura.getText(), colorEditorAsignatura.getColor(), creditos);
+                            AceptarEvent evento = new AceptarEvent(this, a);
+                            lst.onAceptar(evento);
+                        }
                     }
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Formato de crédito no válido, ingrese un número real", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Formato de crédito no válido, ingrese un número real.\n Si tus asignaturas no se miden " +
+                              "por créditos o quieres que todas las asignaturas aporten lo mismo a la nota final del curso, " +
+                              "asegúrate de ponerle la misma cantidad de créditos a todas las asignaturas", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -998,6 +1006,7 @@ public class Ventana extends javax.swing.JFrame {
     }
 
     private void agregarEvaluable(Asignatura asignatura, Periodo periodo) {
+        botonEliminarEvaluable.setVisible(false);
         tituloCrearEvaluable.setText("CREAR EVALUABLE");
         textoNombreEvaluable.setText("");
         checkboxEsExamen.setSelected(false);
@@ -1071,12 +1080,9 @@ public class Ventana extends javax.swing.JFrame {
         ((CardLayout) (getContentPane().getLayout())).show(getContentPane(), "panelCrearEvaluable");
     }
 
-    private void modificarAsignatura(Asignatura asignatura){
+    private void modificarAsignatura(Asignatura asignatura) {
         textoNombreEditorAsignatura.setText(asignatura.getNombre());
-        if(asignatura.getCreditos() == -1)
-            textoCreditosAsignatura.setText("");
-        else
-            textoCreditosAsignatura.setText(String.valueOf(asignatura.getCreditos()));
+        textoCreditosAsignatura.setText(String.valueOf(asignatura.getCreditos()));
         colorEditorAsignatura.setColor(asignatura.getColor());
         for (ActionListener actionListener : aceptarEditorAsignatura.getActionListeners()) {
             aceptarEditorAsignatura.removeActionListener(actionListener);
@@ -1086,17 +1092,16 @@ public class Ventana extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 double creditos;
                 try {
-                    if (textoCreditosAsignatura.getText().equals(""))
-                        creditos = -1;
-                    else
-                        creditos = Double.parseDouble(textoCreditosAsignatura.getText());
-                    if (textoNombreEditorAsignatura.getText().length() < 3)
+                    creditos = Double.parseDouble(textoCreditosAsignatura.getText());
+                    if (creditos <= 0)
+                        JOptionPane.showMessageDialog(null, "Los créditos deben ser un numero real positivo.", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
+                    else if (textoNombreEditorAsignatura.getText().length() < 3)
                         JOptionPane.showMessageDialog(null, "Ingrese un nombre de al menos 3 caracteres", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
                     else {
                         boolean modificado = false;
                         int i = 0;
-                        while(i < jMenuAsignaturas.getItemCount() && !modificado){
-                            if(jMenuAsignaturas.getItem(i).getText().equals(asignatura.getNombre())) {
+                        while (i < jMenuAsignaturas.getItemCount() && !modificado) {
+                            if (jMenuAsignaturas.getItem(i).getText().equals(asignatura.getNombre())) {
                                 jMenuAsignaturas.getItem(i).setText(textoNombreEditorAsignatura.getText());
                                 modificado = true;
                             }
@@ -1110,7 +1115,9 @@ public class Ventana extends javax.swing.JFrame {
                         mostrarPanelCurso();
                     }
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Formato de crédito no válido, ingrese un número real", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Formato de crédito no válido, ingrese un número real.\n Si tus asignaturas no se miden " +
+                              "por créditos o quieres que todas las asignaturas aporten lo mismo a la nota final del curso, " +
+                              "asegúrate de ponerle la misma cantidad de créditos a todas las asignaturas", "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -1138,6 +1145,25 @@ public class Ventana extends javax.swing.JFrame {
         textoAsignaturaEvaluable.setText(asignatura.getNombre());
         textoPeriodoEvaluable.setText(periodo.getNombre());
         textoMaximoEvaluable.setText(String.valueOf(evaluable.getMaximo()));
+
+        botonEliminarEvaluable.setVisible(true);
+        for (ActionListener al : botonEliminarEvaluable.getActionListeners()) {
+            botonEliminarEvaluable.removeActionListener(al);
+        }
+        botonEliminarEvaluable.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (JOptionPane.showConfirmDialog(null, "¿Estás segur@ de que quieres eliminar el evaluable?", "ELIMINAR", JOptionPane.YES_NO_OPTION) == 0) {
+                    periodo.eliminarEvaluable(asignatura, evaluable);
+                    C_Evaluable.getInstance().eliminarEvaluable(evaluable);
+                    C_Evaluable.getInstance().guardar();
+                    Curso.getInstance().guardar();
+                    mostrarPanelCurso();
+                    JOptionPane.showMessageDialog(null, "Evaluable eliminado correctamente.");
+                }
+            }
+        });
+
         for (ActionListener al : aceptarEvaluable.getActionListeners()) {
             aceptarEvaluable.removeActionListener(al);
         }
@@ -1404,22 +1430,27 @@ public class Ventana extends javax.swing.JFrame {
         botonEliminarAsignatura.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Curso.getInstance().eliminarAsignatura(asignatura);
-                C_Asignatura.getInstance().eliminarAsignatura(asignatura);
-                Curso.getInstance().guardar();
-                C_Asignatura.getInstance().guardar();
-                C_Evaluable.getInstance().guardar();
-                boolean eliminado = false;
-                int i = 0;
-                while(i < jMenuAsignaturas.getItemCount() && !eliminado){
-                    if(jMenuAsignaturas.getItem(i).getText().equals(asignatura.getNombre())) {
-                        jMenuAsignaturas.remove(jMenuAsignaturas.getItem(i));
-                        eliminado = true;
+                if (JOptionPane.showConfirmDialog(null, "¿Estás segur@ de que quieres eliminar la asignatura? Se eliminarán también todos sus evaluables y las" +
+                          "relaciones con los periodos.", "ELIMINAR", JOptionPane.YES_NO_OPTION) == 0) {
+                    Curso.getInstance().eliminarAsignatura(asignatura);
+                    C_Asignatura.getInstance().eliminarAsignatura(asignatura);
+                    Curso.getInstance().guardar();
+                    C_Asignatura.getInstance().guardar();
+                    C_Evaluable.getInstance().guardar();
+                    boolean eliminado = false;
+                    int i = 0;
+                    while (i < jMenuAsignaturas.getItemCount() && !eliminado) {
+                        if (jMenuAsignaturas.getItem(i).getText().equals(asignatura.getNombre())) {
+                            jMenuAsignaturas.remove(jMenuAsignaturas.getItem(i));
+                            eliminado = true;
+                        }
+                        i++;
                     }
-                    i++;
+                    mostrarPanelCurso();
+                    JOptionPane.showMessageDialog(null, "Asignatura eliminada correctamente.");
+                } else {
+                    mostrarPanelCurso();
                 }
-                mostrarPanelCurso();
-                JOptionPane.showMessageDialog(null, "Asignatura borrada correctamente.");
             }
         });
 
