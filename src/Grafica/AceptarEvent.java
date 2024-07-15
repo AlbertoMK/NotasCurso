@@ -1,6 +1,6 @@
 package Grafica;
 
-import Logica.Asignatura;
+import Modelo.Asignatura;
 
 import java.util.EventObject;
 

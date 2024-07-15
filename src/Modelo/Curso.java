@@ -1,4 +1,6 @@
-package Logica;
+package Modelo;
+
+import Logica.C_Asignatura;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;

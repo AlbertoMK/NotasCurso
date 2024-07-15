@@ -1,5 +1,8 @@
 package Logica;
 
+import Modelo.Asignatura;
+import Modelo.ExcepcionAsignatura;
+
 import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

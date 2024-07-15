@@ -1,7 +1,7 @@
 import Grafica.Ventana;
 import Logica.C_Asignatura;
 import Logica.C_Evaluable;
-import Logica.Curso;
+import Modelo.Curso;
 
 public class App {
     public static void main(String[] args) {

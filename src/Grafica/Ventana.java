@@ -2,6 +2,7 @@ package Grafica;
 
 import Grafica.Graficos.*;
 import Logica.*;
+import Modelo.*;
 
 import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
@@ -579,11 +580,6 @@ public class Ventana extends javax.swing.JFrame {
 
         cancelarEvaluable = new Boton("CANCELAR");
         cancelarEvaluable.setBounds(ancho / 2 - 75 - 50 - 150, 740, 150, 30);
-        cancelarEvaluable.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                mostrarPanelCurso();
-            }
-        });
         panelAñadirEvaluable.add(cancelarEvaluable);
 
         aceptarEvaluable = new Boton("ACEPTAR");
@@ -1018,6 +1014,14 @@ public class Ventana extends javax.swing.JFrame {
         textoAsignaturaEvaluable.setText(asignatura.getNombre());
         textoPeriodoEvaluable.setText(periodo.getNombre());
         textoMaximoEvaluable.setText("10");
+        for (ActionListener al : cancelarEvaluable.getActionListeners()) {
+            cancelarEvaluable.removeActionListener(al);
+        }
+        cancelarEvaluable.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                mostrarPanelAsignaturaPeriodo(asignatura, periodo);
+            }
+        });
         for (ActionListener al : aceptarEvaluable.getActionListeners()) {
             aceptarEvaluable.removeActionListener(al);
         }
@@ -1070,7 +1074,7 @@ public class Ventana extends javax.swing.JFrame {
                     periodo.añadirEvaluable(asignatura, ev);
                     C_Evaluable.getInstance().guardar();
                     Curso.getInstance().guardar();
-                    mostrarPanelCurso();
+                    mostrarPanelAsignaturaPeriodo(asignatura, periodo);
                     JOptionPane.showMessageDialog(null, "Evaluable creado con éxito");
                 } catch (RuntimeException ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);
@@ -1147,6 +1151,14 @@ public class Ventana extends javax.swing.JFrame {
         textoMaximoEvaluable.setText(String.valueOf(evaluable.getMaximo()));
 
         botonEliminarEvaluable.setVisible(true);
+        for (ActionListener al : cancelarEvaluable.getActionListeners()) {
+            cancelarEvaluable.removeActionListener(al);
+        }
+        cancelarEvaluable.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                mostrarPanelAsignaturaPeriodo(asignatura, periodo);
+            }
+        });
         for (ActionListener al : botonEliminarEvaluable.getActionListeners()) {
             botonEliminarEvaluable.removeActionListener(al);
         }
@@ -1220,7 +1232,7 @@ public class Ventana extends javax.swing.JFrame {
                     evaluable.setAño(año);
                     evaluable.setEsExamen(checkboxEsExamen.isSelected());
                     C_Evaluable.getInstance().guardar();
-                    mostrarPanelCurso();
+                    mostrarPanelAsignaturaPeriodo(asignatura, periodo);
                     JOptionPane.showMessageDialog(null, "Evaluable modificado con éxito");
                 } catch (RuntimeException ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR DE INPUT", JOptionPane.ERROR_MESSAGE);

@@ -1,4 +1,4 @@
-package Logica;
+package Modelo;
 
 public class Fecha {
     private int dia,mes,año;

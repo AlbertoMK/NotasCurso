@@ -2,13 +2,12 @@ package Grafica.Graficos;
 
 import Grafica.Panel;
 import Grafica.Ventana;
-import Logica.Asignatura;
+import Modelo.Asignatura;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.util.HashMap;
 
 public class GraficaBarras extends Panel {
@@ -71,7 +70,7 @@ public class GraficaBarras extends Panel {
                 double nota = notas.get(a);
                 if (nota != -1) {
                     indices.put(i, a);
-                    JLabel label = new JLabel(String.valueOf(nota));
+                    JLabel label = new JLabel(String.format("%.2f", nota));
                     label.setVisible(false);
                     label.setFont(new Font("Arial Rounded MT Bold", Font.PLAIN, 12));
                     label.setForeground(a.getColor());
@@ -119,7 +118,7 @@ public class GraficaBarras extends Panel {
                 double nota = notas.get(a);
                 if (nota != -1) {
                     indices.put(i, a);
-                    JLabel label = new JLabel(String.valueOf(nota));
+                    JLabel label = new JLabel(String.format("%.2f", nota));
                     label.setVisible(false);
                     label.setFont(new Font("Arial Rounded MT Bold", Font.PLAIN, 12));
                     label.setForeground(a.getColor());
@@ -156,7 +155,7 @@ public class GraficaBarras extends Panel {
             Graphics2D g2 = (Graphics2D) g;
             if (notas.size() != 0) {
                 g2.setStroke(new BasicStroke(2));
-                g.drawLine(0, getHeight() - (int) (getHeight() * (sumaNotas / (contador * 10))), getWidth(), getHeight() - (int) (getHeight() * (sumaNotas / (contador * 10))));
+                g.drawLine(0, getHeight() - (int) ((getHeight() - 30) * (sumaNotas / (contador * 10))), getWidth(), getHeight() - (int) ((getHeight() - 30) * (sumaNotas / (contador * 10))));
             }
         }
     }

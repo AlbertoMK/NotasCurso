@@ -1,4 +1,7 @@
-package Logica;
+package Modelo;
+
+import Logica.C_Asignatura;
+import Logica.C_Evaluable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
